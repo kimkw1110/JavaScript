@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>틱택토</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+        td {
+            border: 1px solid black;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const { body } = document;
+        const $table = document.createElement('table');
+        const $result = document.createElement('div'); // 결과창
+        const rows = []; // 줄 담당 배열
+        let turn = 'O'; // 차례 '0'부터 시작
+
+        const checkWinner = (target) => { // 승패 판단
+            const rowIndex = target.parentNode.rowIndex; // tr의 행 인덱스
+            const cellIndex = target.cellIndex; // td의 열 인덱스
+            let hasWinner = false; // 세 칸이 같은 모양으로 채워졌는지 여부
+            if ( // 가로줄 검사
+                rows[rowIndex][0].textContent === turn &&
+                rows[rowIndex][1].textContent === turn &&
+                rows[rowIndex][2].textContent === turn
+            ) {
+                hasWinner = true;
+            }
+            if ( // 세로줄 검사
+                rows[0][cellIndex].textContent === turn &&
+                rows[1][cellIndex].textContent === turn &&
+                rows[2][cellIndex].textContent === turn
+            ) {
+                hasWinner = true;
+            }
+            if ( // 대각선 검사
+                rows[0][0].textContent === turn &&
+                rows[1][1].textContent === turn &&
+                rows[2][2].textContent === turn
+            ) {
+                hasWinner = true;
+            }
+            if ( // 대각선 검사
+                rows[0][2].textContent === turn &&
+                rows[1][1].textContent === turn &&
+                rows[2][0].textContent === turn
+            ) {
+                hasWinner = true;
+            }
+            return hasWinner;
+        };
+
+        const computerMove = () => {
+            const emptyCells = rows.flat().filter(cell => !cell.textContent);
+            if (emptyCells.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            emptyCells[randomIndex].textContent = 'X';
+            const hasWinner = checkWinner(emptyCells[randomIndex]);
+            if (hasWinner) {
+                $result.textContent = `X님이 승리!`;
+                $table.removeEventListener('click', callback);
+            } else {
+                const draw = rows.flat().every(cell => cell.textContent);
+                if (draw) {
+                    $result.textContent = `무승부`;
+                }
+                turn = 'O';
+            }
+        };
+
+        const callback = (event) => {
+            if (event.target.textContent !== '' || turn === 'X') { // 빈 칸이 아니거나 X의 차례일 때
+                console.log('빈 칸이 아닙니다.');
+                return;
+            }
+            // 빈 칸이면
+            event.target.textContent = turn;
+            const hasWinner = checkWinner(event.target);
+            // 승자가 있으면
+            if (hasWinner) {
+                $result.textContent = `${turn}님이 승리!`;
+                $table.removeEventListener('click', callback);
+                return;
+            }
+            // 승자가 없으면
+            const draw = rows.flat().every((cell) => cell.textContent);
+            if (draw) {
+                $result.textContent = `무승부`;
+                return;
+            }
+            turn = 'X';
+            setTimeout(computerMove, 500); // 0.5초 후 컴퓨터가 움직이게 함
+        };
+
+        for (let i = 1; i <= 3; i++) {
+            const $tr = document.createElement('tr');
+            const cells = [];
+            for (let j = 1; j <= 3; j++) {
+                const $td = document.createElement('td');
+                cells.push($td);
+                $tr.appendChild($td);
+            }
+            rows.push(cells);
+            $table.appendChild($tr);
+        }
+        $table.addEventListener('click', callback);
+        body.appendChild($table);
+        body.appendChild($result);
+    </script>
+</body>
+</html>
